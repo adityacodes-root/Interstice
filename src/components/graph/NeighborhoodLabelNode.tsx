@@ -8,6 +8,7 @@ interface NeighborhoodLabelNodeProps {
     label: string;
     isNeighborhoodLabel: true;
     neighborhoodTheme?: string;
+    parentNodeId?: string;
   };
 }
 

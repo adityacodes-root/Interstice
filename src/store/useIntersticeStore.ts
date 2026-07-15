@@ -688,6 +688,7 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
                 label: nb.label || 'RELATED',
                 isNeighborhoodLabel: true,
                 neighborhoodTheme: nb.theme || '',
+                parentNodeId: 'root',
               },
               type: 'neighborhoodLabel',
               selectable: false,
@@ -903,6 +904,7 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
                   label: nb.label || 'RELATED',
                   isNeighborhoodLabel: true,
                   neighborhoodTheme: nb.theme || '',
+                  parentNodeId: nodeId,
                 },
                 type: 'neighborhoodLabel',
                 selectable: false,
@@ -1214,6 +1216,11 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
       };
       findChildren(nodeId);
 
+      const labelIdsToHide = nodes
+        .filter(n => n.data?.isNeighborhoodLabel && (n.data?.parentNodeId === nodeId || childIds.has(n.data?.parentNodeId)))
+        .map(n => n.id);
+      labelIdsToHide.forEach(id => childIds.add(id));
+
       // Just hide descendants instead of deleting, so they can be uncollapsed later.
       const newHiddenIds = new Set(hiddenNodeIds);
       childIds.forEach(id => newHiddenIds.add(id));
@@ -1266,18 +1273,6 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
       };
       childIds.forEach(id => { allDescendants.add(id); collectAll(id); });
 
-      const newHiddenIds = new Set(hiddenNodeIds);
-      allDescendants.forEach(id => newHiddenIds.delete(id));
-
-      const updatedNodes = nodes.map(n => {
-        if (allDescendants.has(n.id)) return { ...n, hidden: false };
-        return n;
-      });
-      const updatedEdges = edges.map(e => {
-        if (allDescendants.has(e.source) || allDescendants.has(e.target)) return { ...e, hidden: false };
-        return e;
-      });
-
       const newExpandedSet = new Set(expandedNodeIds);
       newExpandedSet.add(nodeId);
       allDescendants.forEach(id => {
@@ -1285,13 +1280,27 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
         if (node?.data?.isExpanded) newExpandedSet.add(id);
       });
 
-      const updatedParentNodes = updatedNodes.map(n => {
+      const labelsToRestore = nodes
+        .filter(n => n.data?.isNeighborhoodLabel && (n.data?.parentNodeId === nodeId || (allDescendants.has(n.data?.parentNodeId) && newExpandedSet.has(n.data?.parentNodeId))))
+        .map(n => n.id);
+
+      const newHiddenIds = new Set(hiddenNodeIds);
+      allDescendants.forEach(id => newHiddenIds.delete(id));
+      labelsToRestore.forEach(id => newHiddenIds.delete(id));
+
+      const updatedNodes = nodes.map(n => {
+        if (allDescendants.has(n.id) || labelsToRestore.includes(n.id)) return { ...n, hidden: false };
         if (n.id === nodeId) return { ...n, data: { ...n.data, isExpanded: true } };
         return n;
       });
 
+      const updatedEdges = edges.map(e => {
+        if (allDescendants.has(e.source) || allDescendants.has(e.target)) return { ...e, hidden: false };
+        return e;
+      });
+
       set({
-        nodes: updatedParentNodes,
+        nodes: updatedNodes,
         edges: updatedEdges,
         hiddenNodeIds: newHiddenIds,
         expandedNodeIds: newExpandedSet,

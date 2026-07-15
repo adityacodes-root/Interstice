@@ -449,7 +449,7 @@ function DetailPanel() {
         </span>
         {selectedNodeId !== 'root' && (
           <div className="flex items-center gap-3">
-            // Show option to restore if children are collapsed.
+            {/* Show option to restore if children are collapsed. */}
             {nodes.find(n => n.id === selectedNodeId)?.data?.isExpanded === false &&
               edges.some(e => e.source === selectedNodeId && (e as any).hidden) ? (
               <button
@@ -643,27 +643,27 @@ function JourneySummaryModal({ isOpen, onClose, journey }: JourneyModalProps) {
       <div className="absolute inset-0 bg-black/80" onClick={onClose} />
 
 
-      <div className="relative bg-[#0A0A0A] border border-[#27272A] w-full max-w-xl p-8 z-10 flex flex-col gap-6">
+      <div className="relative bg-[var(--bg-card)] border border-[var(--border)] w-full max-w-xl p-8 z-10 flex flex-col gap-6">
 
   
-        <div className="flex items-center justify-between border-b border-[#27272A] pb-4">
-          <span className="text-[10px] tracking-[0.2em] uppercase text-[#A1A1AA] font-semibold">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+          <span className="text-[10px] tracking-[0.2em] uppercase text-[var(--muted)] font-semibold">
             Your Exploration Journey
           </span>
           <button
             onClick={onClose}
-            className="text-[#A1A1AA] hover:text-white cursor-pointer text-lg leading-none"
+            className="text-[var(--muted)] hover:text-[var(--text)] cursor-pointer text-lg leading-none"
           >
             &times;
           </button>
         </div>
 
 
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 text-[12px] text-[#A1A1AA] whitespace-nowrap">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 text-[12px] text-[var(--muted)] whitespace-nowrap">
           {journey.map((step, idx) => (
             <React.Fragment key={idx}>
-              {idx > 0 && <span className="text-[#3F3F46]">&rarr;</span>}
-              <span className={idx === journey.length - 1 ? 'text-white font-medium' : ''}>
+              {idx > 0 && <span className="text-[var(--muted)]">&rarr;</span>}
+              <span className={idx === journey.length - 1 ? 'text-[var(--text)] font-medium' : ''}>
                 {step}
               </span>
             </React.Fragment>
@@ -674,13 +674,13 @@ function JourneySummaryModal({ isOpen, onClose, journey }: JourneyModalProps) {
         <div className="py-4">
           {loading ? (
             <div className="flex flex-col gap-2">
-              <div className="h-4 bg-[#161616] rounded w-full animate-pulse" />
-              <div className="h-4 bg-[#161616] rounded w-[95%] animate-pulse" />
-              <div className="h-4 bg-[#161616] rounded w-[80%] animate-pulse" />
+              <div className="h-4 bg-[var(--bg-panel)] rounded w-full animate-pulse" />
+              <div className="h-4 bg-[var(--bg-panel)] rounded w-[95%] animate-pulse" />
+              <div className="h-4 bg-[var(--bg-panel)] rounded w-[80%] animate-pulse" />
             </div>
           ) : (
             <p
-              className="text-[18px] text-[#E4E4E7] leading-relaxed font-serif tracking-tight"
+              className="text-[18px] text-[var(--text)] leading-relaxed font-serif tracking-tight"
               style={{ fontFamily: 'var(--font-dm-serif)' }}
             >
               {narrative}
@@ -689,10 +689,10 @@ function JourneySummaryModal({ isOpen, onClose, journey }: JourneyModalProps) {
         </div>
 
 
-        <div className="flex justify-end border-t border-[#27272A] pt-4">
+        <div className="flex justify-end border-t border-[var(--border)] pt-4">
           <button
             onClick={onClose}
-            className="text-[12px] tracking-[0.1em] uppercase text-white border border-[#27272A] px-5 py-2.5 hover:border-white hover:bg-[#111111] transition-all cursor-pointer font-medium"
+            className="text-[12px] tracking-[0.1em] uppercase text-[var(--text)] border border-[var(--border)] px-5 py-2.5 hover:border-[var(--text)] hover:bg-[var(--bg-panel)] transition-all cursor-pointer font-medium"
           >
             Close Summary
           </button>
@@ -729,7 +729,7 @@ function GraphToolbar() {
 
   return (
     <>
-      <div className="flex-shrink-0 border-b border-[#27272A] bg-[#070707]">
+      <div className="flex-shrink-0 border-b border-[var(--border)] bg-[var(--bg-sidebar)]">
 
         <div className="h-9 flex items-center px-4 gap-4">
 

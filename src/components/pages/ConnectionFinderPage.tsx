@@ -3,10 +3,18 @@
 import React, { useState } from 'react';
 import { useIntersticeStore } from '@/store/useIntersticeStore';
 
+const RECOMMENDATIONS = [
+  { from: 'Kubernetes', to: 'Japanese Language' },
+  { from: 'Quantum Physics', to: 'Ancient Rome' },
+  { from: 'Neuroplasticity', to: 'Epigenetics' },
+  { from: 'Internet', to: 'Socrates' },
+  { from: 'Blockchain', to: 'Renaissance Art' },
+];
+
 export default function ConnectionFinderPage() {
-  const { 
-    findConnection, 
-    isLoading, 
+  const {
+    findConnection,
+    isLoading,
     setActivePage,
     connectionBridgeResult,
     resetGraph
@@ -53,11 +61,11 @@ export default function ConnectionFinderPage() {
 
     return (
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-[var(--bg)] animate-fade-in">
-        
+
 
         <aside className="w-full md:w-[350px] border-r border-[var(--border)] flex flex-col p-8 overflow-y-auto shrink-0 bg-[var(--bg-sidebar)]">
-          
-          <button 
+
+          <button
             onClick={handleResetSearch}
             className="text-[11px] text-[var(--muted)] hover:text-[var(--text)] mb-8 tracking-[0.1em] uppercase text-left cursor-pointer transition-colors"
           >
@@ -81,11 +89,11 @@ export default function ConnectionFinderPage() {
                   className="relative text-left group flex flex-col gap-1.5 cursor-pointer focus:outline-none select-none"
                 >
 
-                  <div 
+                  <div
                     className={[
                       'absolute -left-[23px] top-1.5 w-2.5 h-2.5 rounded-full border transition-all duration-150',
-                      isSelected 
-                        ? 'bg-[var(--text)] border-[var(--text)] scale-125 ring-4 ring-[var(--text)]/10' 
+                      isSelected
+                        ? 'bg-[var(--text)] border-[var(--text)] scale-125 ring-4 ring-[var(--text)]/10'
                         : 'bg-[var(--bg)] border-[var(--muted)] group-hover:border-[var(--text)]'
                     ].join(' ')}
                   />
@@ -119,13 +127,13 @@ export default function ConnectionFinderPage() {
 
 
         <main className="flex-1 overflow-y-auto p-10 md:p-16 flex flex-col gap-12 max-w-4xl">
-          
+
 
           <section className="flex flex-col gap-4">
             <h1 className="text-[10px] tracking-[0.2em] uppercase text-[var(--muted)] font-medium">
               Editorial Narrative
             </h1>
-            <p 
+            <p
               className="text-[20px] md:text-[24px] text-[var(--text)] leading-relaxed font-serif tracking-tight"
               style={{ fontFamily: 'var(--font-dm-serif)' }}
             >
@@ -139,12 +147,12 @@ export default function ConnectionFinderPage() {
           {activeStep && (
             <section className="flex flex-col gap-8 animate-fade-in">
               <div className="flex flex-col md:flex-row gap-8 items-start">
-                
+
 
                 {activeStep.image && (
                   <div className="w-full md:w-[220px] h-[160px] relative overflow-hidden bg-[var(--bg-panel)] border border-[var(--border)] shrink-0">
-                    <img 
-                      src={activeStep.image} 
+                    <img
+                      src={activeStep.image}
                       alt={activeStep.name}
                       className="w-full h-full object-cover"
                     />
@@ -158,9 +166,9 @@ export default function ConnectionFinderPage() {
                       {activeStep.name}
                     </h2>
                     {activeStep.url && (
-                      <a 
-                        href={activeStep.url} 
-                        target="_blank" 
+                      <a
+                        href={activeStep.url}
+                        target="_blank"
                         rel="noreferrer"
                         className="text-[11px] text-[var(--muted)] hover:text-[var(--text)] underline"
                       >
@@ -168,7 +176,7 @@ export default function ConnectionFinderPage() {
                       </a>
                     )}
                   </div>
-                  
+
                   <p className="text-[13px] text-[var(--muted)] leading-relaxed">
                     {activeStep.explanation}
                   </p>
@@ -183,8 +191,8 @@ export default function ConnectionFinderPage() {
                   </h3>
                   <div className="flex flex-wrap gap-2 pt-1">
                     {activeStep.categories.slice(0, 6).map((cat: string) => (
-                      <span 
-                        key={cat} 
+                      <span
+                        key={cat}
                         className="px-2.5 py-0.5 bg-[var(--bg-panel)] text-[var(--muted)] text-[11px] rounded border border-[var(--border)] select-none"
                       >
                         {cat}
@@ -205,7 +213,7 @@ export default function ConnectionFinderPage() {
                       let display = src;
                       try {
                         display = new URL(src).hostname;
-                      } catch {}
+                      } catch { }
                       return (
                         <li key={index} className="text-[12px] text-[var(--muted)] hover:text-[var(--text)] list-disc list-inside truncate">
                           <a href={src} target="_blank" rel="noreferrer" className="hover:underline">
@@ -305,6 +313,29 @@ export default function ConnectionFinderPage() {
           </button>
         </div>
       </form>
+
+      <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 animate-fade-in max-w-xl">
+        <span className="text-[11px] tracking-[0.12em] uppercase text-[var(--muted)] font-mono">
+          try —
+        </span>
+        {RECOMMENDATIONS.map((r, i) => (
+          <React.Fragment key={i}>
+            <button
+              onClick={() => {
+                setConceptA(r.from);
+                setConceptB(r.to);
+              }}
+              disabled={localLoading}
+              className="text-[11px] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-mono disabled:opacity-40"
+            >
+              {r.from} &rarr; {r.to}
+            </button>
+            {i < RECOMMENDATIONS.length - 1 && (
+              <span className="text-[var(--muted)] text-[10px] font-mono">/</span>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
     </div>
   );
 }

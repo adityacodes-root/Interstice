@@ -8,6 +8,7 @@ export default function SavedPage() {
 
   const [filterQuery, setFilterQuery] = useState('');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
 
   const filtered = history.filter((item) => {
     const matchSearch = item.title.toLowerCase().includes(filterQuery.toLowerCase());
@@ -15,9 +16,9 @@ export default function SavedPage() {
     return matchSearch && matchFav;
   });
 
-  const totalSessions   = history.length;
-  const favCount        = history.filter((h) => h.favorite).length;
-  const maxDepth        = history.length > 0 ? Math.max(...history.map((h) => h.depth)) : 0;
+  const totalSessions = history.length;
+  const favCount = history.filter((h) => h.favorite).length;
+  const maxDepth = history.length > 0 ? Math.max(...history.map((h) => h.depth)) : 0;
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -38,11 +39,7 @@ export default function SavedPage() {
           </div>
           {history.length > 0 && (
             <button
-              onClick={() => {
-                if (window.confirm('Are you sure you want to clear all saved journeys?')) {
-                  clearHistory();
-                }
-              }}
+              onClick={() => setShowConfirmClear(true)}
               className="text-[11px] tracking-[0.12em] uppercase text-[#EF4444] hover:text-red-400 transition-colors cursor-pointer pb-1.5"
             >
               Clear All
@@ -55,9 +52,9 @@ export default function SavedPage() {
 
         <div className="flex items-center gap-10">
           {[
-            { label: 'Total',    value: totalSessions },
-            { label: 'Starred',  value: favCount      },
-            { label: 'Max depth', value: maxDepth     },
+            { label: 'Total', value: totalSessions },
+            { label: 'Starred', value: favCount },
+            { label: 'Max depth', value: maxDepth },
           ].map((s) => (
             <div key={s.label} className="flex flex-col gap-0.5">
               <span className="text-[24px] font-light text-white tabular-nums">{s.value}</span>
@@ -151,6 +148,40 @@ export default function SavedPage() {
         )}
 
       </div>
+
+      {showConfirmClear && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in bg-black/60 backdrop-blur-md">
+          <div className="absolute inset-0" onClick={() => setShowConfirmClear(false)} />
+          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] w-full max-w-sm p-6 z-10 flex flex-col gap-6 rounded shadow-2xl">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-base font-semibold text-[var(--text)] font-mono uppercase tracking-wider">
+                Clear All Journeys
+              </h2>
+              <p className="text-[12px] text-[var(--muted)] leading-relaxed">
+                Are you sure you want to permanently delete all saved journeys?
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowConfirmClear(false)}
+                className="px-4 py-2 border border-[var(--border)] text-[11px] uppercase tracking-wider text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--bg-panel)] transition-all cursor-pointer font-mono font-medium rounded-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  clearHistory();
+                  setShowConfirmClear(false);
+                }}
+                className="px-4 py-2 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 text-[11px] uppercase tracking-wider transition-all cursor-pointer font-mono font-medium rounded-sm"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

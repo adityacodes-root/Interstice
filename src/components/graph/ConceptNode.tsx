@@ -236,7 +236,7 @@ const ConceptNode = ({ id, data, selected }: ConceptNodeProps) => {
   const s = styleByRelevance[relevance] || styleByRelevance.distant;
 
   const dotColor = relevance === 'distant'
-    ? `rgba(255,255,255,${s.dotSize * 0.04})`
+    ? `rgba(var(--node-text-rgb), ${s.dotSize * 0.04})`
     : modeColor.primary;
 
   const isExpanded = data.isExpanded;

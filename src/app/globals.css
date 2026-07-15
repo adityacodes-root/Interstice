@@ -381,9 +381,13 @@ aside,
 }
 
 .border-\[\#27272A\],
+.border-\[\#27272a\],
 .border-\[\#1A1A1A\],
+.border-\[\#1a1a1a\],
 .border-\[\#1C1C1C\],
-.border-\[\#2A2A2A\] {
+.border-\[\#1c1c1c\],
+.border-\[\#2A2A2A\],
+.border-\[\#2a2a2a\] {
   border-color: var(--border) !important;
 }
 
@@ -395,15 +399,20 @@ aside,
 }
 
 .text-\[\#A1A1AA\],
+.text-\[\#a1a1aa\],
 .text-\[\#71717A\],
+.text-\[\#71717a\],
 .text-\[\#3F3F46\],
+.text-\[\#3f3f46\],
 .text-gray-400,
 .text-neutral-400 {
   color: var(--muted) !important;
 }
 
 .placeholder-\[\#A1A1AA\]::placeholder,
-.placeholder-\[\#3F3F46\]::placeholder {
+.placeholder-\[\#a1a1aa\]::placeholder,
+.placeholder-\[\#3F3F46\]::placeholder,
+.placeholder-\[\#3f3f46\]::placeholder {
   color: var(--muted) !important;
 }
 
@@ -412,6 +421,11 @@ aside,
 }
 
 .hover\:border-white:hover {
+  border-color: var(--text) !important;
+}
+
+.hover\:border-\[\#3F3F46\]:hover,
+.hover\:border-\[\#3f3f46\]:hover {
   border-color: var(--text) !important;
 }
 
