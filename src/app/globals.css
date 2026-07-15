@@ -1,0 +1,479 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  --font-serif: var(--font-dm-serif), Georgia, serif;
+}
+
+/* ─── Design Tokens ─────────────────────────────────────────────── */
+:root {
+  --bg: #0A0A0A;
+  --bg-sidebar: #070707;
+  --bg-panel: #111111;
+  --bg-card: #0C0C0C;
+  --border: #27272A;
+  --text: #FFFFFF;
+  --logo-color: #FFFFFF;
+  --muted: #A1A1AA;
+  --input-focus: #FFFFFF;
+
+  --node-bg: #0C0C0C;
+  --node-border: rgba(255, 255, 255, 0.12);
+  --node-text: #FFFFFF;
+  --node-text-rgb: 255, 255, 255;
+  --node-bg-rgb: 8, 8, 8;
+  --shadow-node: 0 4px 16px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-color: rgba(0, 0, 0, 0.6);
+  --grid-line: rgba(255, 255, 255, 0.025);
+
+  color-scheme: dark;
+}
+
+html[data-theme="light"],
+[data-theme="light"] {
+  --bg: #FAF6EE;
+  /* Linen beige background */
+  --bg-sidebar: #F3EEE3;
+  /* Deeper beige sidebar */
+  --bg-panel: #ECE7DB;
+  /* Accent panel beige */
+  --bg-card: #FDFBFA;
+  /* Alabaster white card surface */
+  --border: #E4DEC9;
+  /* Clay beige borders */
+  --text: #2C251F;
+  /* Warm charcoal text */
+  --logo-color: #A9876D;
+  --muted: #80786F;
+  /* Stone grey muted text */
+  --input-focus: #2C251F;
+
+  --node-bg: #FDFBFA;
+  --node-border: rgba(44, 37, 31, 0.12);
+  --node-text: #2C251F;
+  --node-text-rgb: 44, 37, 31;
+  --node-bg-rgb: 253, 251, 250;
+  --shadow-node: 0 4px 16px rgba(44, 37, 31, 0.06), 0 2px 4px rgba(44, 37, 31, 0.03);
+  --shadow-color: rgba(44, 37, 31, 0.06);
+  --grid-line: rgba(44, 37, 31, 0.04);
+
+  color-scheme: light;
+}
+
+/* ─── Typography ────────────────────────────────────────────────── */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbars ─────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3F3F46;
+}
+
+/* ─── React Flow ─────────────────────────────────────────────────── */
+.react-flow__renderer {
+  background: transparent !important;
+}
+
+.react-flow__background {
+  background: var(--bg) !important;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.react-flow__node {
+  overflow: visible !important;
+  cursor: pointer !important;
+  /* Remove ReactFlow's default background/shadow so our custom node styling shows */
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Kill ReactFlow's blue selection outline on nodes */
+.react-flow__node.selected>div,
+.react-flow__node.selected {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.react-flow__node:focus,
+.react-flow__node:focus-visible {
+  outline: none !important;
+}
+
+/* Kill ALL dashed / animated edge styling from ReactFlow internals */
+.react-flow__edge-path,
+.react-flow__edge-path--animated {
+  stroke-dasharray: none !important;
+  stroke-dashoffset: 0 !important;
+  animation: none !important;
+}
+
+/* Kill arrowheads entirely */
+.react-flow__arrowhead {
+  display: none !important;
+}
+
+.react-flow__marker {
+  display: none !important;
+}
+
+.react-flow__edge-path {
+  marker-end: none !important;
+  marker-start: none !important;
+}
+
+/* Kill edge selected/hover outlines */
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: inherit !important;
+}
+
+.react-flow__edge.selected path {
+  stroke: inherit !important;
+}
+
+/* Handles invisible, edge routing still works */
+.react-flow__handle {
+  opacity: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Controls — minimal precision bar */
+.react-flow__controls {
+  background: rgba(10, 10, 10, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+.react-flow__controls-button {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  width: 28px !important;
+  height: 28px !important;
+  transition: color 0.15s ease, background 0.15s ease !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor !important;
+}
+
+/* ─── Animations ─────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes nodePop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDownAndFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes slideUpAndFadeOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, -12px);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-node-pop {
+  animation: nodePop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-toast-in {
+  animation: slideDownAndFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-toast-out {
+  animation: slideUpAndFadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Utility ────────────────────────────────────────────────────── */
+.border-base {
+  border-color: var(--border);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+/* Focus ring */
+*:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.25);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+input:focus,
+input:focus-visible {
+  outline: none !important;
+}
+
+/* ─── Light/Dark Class Overrides ────────────────────────────────── */
+.bg-\[\#0A0A0A\],
+.bg-\[\#070707\],
+.bg-\[\#111111\],
+.bg-\[\#111\],
+.bg-\[\#0C0C0C\],
+.bg-\[\#090909\],
+.bg-\[\#09090b\],
+.bg-\[\#070707\],
+.bg-\[\#050505\] {
+  background-color: var(--bg) !important;
+}
+
+aside,
+.bg-\[\#070707\] {
+  background-color: var(--bg-sidebar) !important;
+}
+
+.bg-\[\#111111\],
+.bg-\[\#111\],
+.bg-\[\#161616\],
+.bg-neutral-900 {
+  background-color: var(--bg-panel) !important;
+}
+
+.bg-\[\#0C0C0C\],
+.bg-\[\#0C0C0C\]\/95,
+.bg-neutral-800 {
+  background-color: var(--bg-card) !important;
+}
+
+.bg-\[\#0A0A0A\]\/95 {
+  background-color: rgba(var(--node-bg-rgb), 0.95) !important;
+}
+
+.border-\[\#27272A\],
+.border-\[\#1A1A1A\],
+.border-\[\#1C1C1C\],
+.border-\[\#2A2A2A\] {
+  border-color: var(--border) !important;
+}
+
+.text-white,
+.text-gray-100,
+.text-gray-200,
+.text-neutral-100 {
+  color: var(--text) !important;
+}
+
+.text-\[\#A1A1AA\],
+.text-\[\#71717A\],
+.text-\[\#3F3F46\],
+.text-gray-400,
+.text-neutral-400 {
+  color: var(--muted) !important;
+}
+
+.placeholder-\[\#A1A1AA\]::placeholder,
+.placeholder-\[\#3F3F46\]::placeholder {
+  color: var(--muted) !important;
+}
+
+.focus\:border-white:focus {
+  border-color: var(--input-focus) !important;
+}
+
+.hover\:border-white:hover {
+  border-color: var(--text) !important;
+}
+
+.hover\:bg-\[\#111111\]:hover,
+.hover\:bg-\[\#161616\]:hover {
+  background-color: var(--border) !important;
+}
+
+.hover\:text-white:hover {
+  color: var(--text) !important;
+}
+
+/* Ensure React Flow elements like the grid background respect variables */
+.react-flow__background {
+  background-color: var(--bg) !important;
+}
+
+/* Custom adjustments for dither patterns or overlays in light mode */
+html[data-theme="light"] .react-flow canvas,
+[data-theme="light"] .react-flow canvas {
+  opacity: 0.15 !important;
+}
+
+html[data-theme="light"] *:focus-visible,
+[data-theme="light"] *:focus-visible {
+  outline: 1px solid rgba(44, 37, 31, 0.25);
+}
+
+*,
+*::before,
+*::after {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s, stroke 0.2s, fill 0.2s !important;
+}
+
+/* Disable transition on logo SVG to prevent overlapping rendering artifacts (flickering circles) */
+header button svg,
+header button svg * {
+  transition: none !important;
+}
+
+.react-flow__controls {
+  box-shadow: var(--shadow-node) !important;
+  border-radius: 2px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--border) !important;
+}
+
+.react-flow__controls-button {
+  background-color: var(--bg-card) !important;
+  border-bottom: 1px solid var(--border) !important;
+  fill: var(--text) !important;
+  color: var(--text) !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: var(--bg-panel) !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor !important;
+}
