@@ -4,11 +4,12 @@ import React, { useState } from 'react';
 import { useIntersticeStore } from '@/store/useIntersticeStore';
 
 const RECOMMENDATIONS = [
-  { from: 'Kubernetes', to: 'Japanese Language' },
-  { from: 'Quantum Physics', to: 'Ancient Rome' },
+  { from: 'Banana', to: 'Black Hole' },
+  { from: 'Rubber Duck', to: 'French Revolution' },
   { from: 'Neuroplasticity', to: 'Epigenetics' },
   { from: 'Internet', to: 'Socrates' },
-  { from: 'Blockchain', to: 'Renaissance Art' },
+  { from: 'Socks', to: 'Superconductivity' },
+  { from: 'Pizza', to: 'Space Station' },
 ];
 
 export default function ConnectionFinderPage() {
@@ -71,9 +72,14 @@ export default function ConnectionFinderPage() {
             ← New Bridge Search
           </button>
 
-          <h2 className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] mb-4 sm:mb-6 font-medium">
-            Concept Bridge Path
-          </h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] font-medium">
+              Concept Bridge Path
+            </h2>
+            <span className="text-[10px] font-mono text-[var(--muted)] bg-[var(--bg-panel)] px-2 py-0.5 rounded border border-[var(--border)]">
+              {path.length - 1} {path.length - 1 === 1 ? 'Connection' : 'Connections'}
+            </span>
+          </div>
 
           <div className="relative pl-6 flex flex-col gap-6 sm:gap-8">
 
@@ -97,12 +103,15 @@ export default function ConnectionFinderPage() {
                     ].join(' ')}
                   />
 
-                  <span className={[
-                    'text-[13px] font-medium leading-none transition-colors duration-150',
-                    isSelected ? 'text-[var(--text)]' : 'text-[var(--muted)] group-hover:text-[var(--text)]'
-                  ].join(' ')}>
-                    {step.name}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] font-mono text-[var(--muted)] opacity-60">0{idx + 1}</span>
+                    <span className={[
+                      'text-[13px] font-medium leading-none transition-colors duration-150',
+                      isSelected ? 'text-[var(--text)]' : 'text-[var(--muted)] group-hover:text-[var(--text)]'
+                    ].join(' ')}>
+                      {step.name}
+                    </span>
+                  </div>
 
                   {step.reason && (
                     <span className="text-[11px] text-[var(--muted)] opacity-80 group-hover:opacity-100 group-hover:text-[var(--text)] transition-colors leading-relaxed font-light">
@@ -123,6 +132,27 @@ export default function ConnectionFinderPage() {
         </aside>
 
         <main className="flex-1 overflow-y-auto p-6 sm:p-10 md:p-14 lg:p-16 flex flex-col gap-8 sm:gap-12 max-w-4xl">
+
+          {/* Stepping-Stone Breadcrumbs Bar */}
+          <div className="flex flex-wrap items-center gap-2 py-2 px-3.5 bg-[var(--bg-panel)] border border-[var(--border)] rounded-md text-[11px] font-mono">
+            <span className="text-[var(--muted)] uppercase tracking-wider text-[10px]">Path:</span>
+            {path.map((step, idx) => (
+              <React.Fragment key={idx}>
+                <button
+                  onClick={() => setSelectedStepIndex(idx)}
+                  className={[
+                    'hover:underline cursor-pointer transition-colors',
+                    idx === selectedStepIndex ? 'text-[var(--text)] font-bold' : 'text-[var(--muted)]'
+                  ].join(' ')}
+                >
+                  {step.name}
+                </button>
+                {idx < path.length - 1 && (
+                  <span className="text-[var(--muted)] opacity-40">→</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
 
           <section className="flex flex-col gap-3 sm:gap-4">
             <h1 className="text-[10px] tracking-[0.2em] uppercase text-[var(--muted)] font-medium">
@@ -284,8 +314,11 @@ export default function ConnectionFinderPage() {
         )}
 
         {localLoading && (
-          <div className="flex items-center gap-3 text-[11px] text-[var(--muted)]">
-            <span className="tracking-[0.1em] uppercase">Mapping: {conceptA} → {conceptB}</span>
+          <div className="flex items-center gap-3 text-[11px] text-[var(--muted)] font-mono animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-[var(--text)]"></span>
+            <span className="tracking-[0.08em]">
+              Mapping bridge: {conceptA} → {conceptB} • Everything somehow connects…
+            </span>
           </div>
         )}
 

@@ -1076,7 +1076,7 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
 
     findConnection: async (conceptA: string, conceptB: string) => {
       if (!conceptA.trim() || !conceptB.trim()) return false;
-      const { resetGraph, explorationMode } = get();
+      const { resetGraph } = get();
 
       resetGraph();
       set({ isLoading: true });
@@ -1090,7 +1090,7 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
           body: JSON.stringify({
             conceptA,
             conceptB,
-            mode: explorationMode,
+            mode: 'default',
           }),
         });
 
@@ -1121,7 +1121,7 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
               label: step.name,
               isExpanded: true,
               isPathConnection: true,
-              mode: explorationMode,
+              mode: 'default',
             },
             type: 'concept',
           });
@@ -1137,7 +1137,7 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
                 isBridge: true,
                 relationshipType: 'Path Connection',
                 supportingSource: 'Concept Bridge Traversal',
-                mode: explorationMode,
+                mode: 'default',
               }
             });
           }
@@ -1181,7 +1181,7 @@ export const useIntersticeStore = create<IntersticeState>((set, get) => {
           nodeCount: newNodes.length,
           depth: newNodes.length,
           favorite: false,
-          mode: get().explorationMode,
+          mode: 'default',
           nodes: newNodes,
           edges: newEdges,
           breadcrumbs: pathElements.map((p: any) => p.name),

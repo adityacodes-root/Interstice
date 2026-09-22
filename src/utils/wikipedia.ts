@@ -8,17 +8,16 @@ export function extractSubjectFromQuestion(question: string): string {
   let q = question.trim();
 
   // Clean up user questions to find the main subject for Wikipedia search.
-  // Handles stuff like "How does X relate to Y?", "What is the history of X?", or "What is X?"
   q = q.replace(/\?+$/, '');
 
   const howDoesRelate = q.match(/^How\s+does\s+(.+?)\s+relate\s+to/i);
   if (howDoesRelate) return howDoesRelate[1].trim();
 
-  const ofX = q.match(/of\s+([^?]+)$/i);
-  if (ofX) return ofX[1].trim();
+  const whatIs = q.match(/^What\s+(?:is|are)\s+(?:the\s+)?(?:history\s+of\s+|nature\s+of\s+|concept\s+of\s+)?(.+?)$/i);
+  if (whatIs) return whatIs[1].trim();
 
-  const whatIs = q.match(/^What\s+(is|are)\s+(.+?)$/i);
-  if (whatIs) return whatIs[2].trim();
+  const historyOf = q.match(/^(?:history|origins?)\s+of\s+(.+?)$/i);
+  if (historyOf) return historyOf[1].trim();
 
   return q;
 }

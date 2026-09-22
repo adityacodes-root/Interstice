@@ -1,18 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAiConfig, callAi } from '@/utils/ai';
 import { getMockConnect } from '@/utils/mockData';
-import { 
-  searchWikipedia, 
-  getWikipediaSummary, 
+import {
+  searchWikipedia,
+  getWikipediaSummary,
   getWikipediaDetails,
   getWikipediaBacklinks,
   filterLowValueLinks
 } from '@/utils/wikipedia';
 
+interface AiPathStep {
+  name: string;
+  reason: string;
+}
+
+interface AiConnectResponse {
+  distance?: 'normal' | 'far' | 'absurd';
+  path: AiPathStep[];
+  overallExplanation: string;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { conceptA, conceptB, mode = 'default' } = body;
+    const { conceptA, conceptB } = body;
 
     if (!conceptA || !conceptB) {
       return NextResponse.json(
@@ -27,11 +38,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(mockData);
     }
 
-
-    const [titleA, titleB] = await Promise.all([
+    // Resolve initial Wikipedia canonical titles
+    const [titleAraw, titleBraw] = await Promise.all([
       searchWikipedia(conceptA),
       searchWikipedia(conceptB)
     ]);
+
+    const titleA = titleAraw || conceptA.trim();
+    const titleB = titleBraw || conceptB.trim();
 
     if (!titleA || !titleB) {
       return NextResponse.json(
@@ -40,65 +54,89 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let pathNames: string[] = [];
-    let traversalSource = `${mode.charAt(0).toUpperCase() + mode.slice(1)} Connection Pathfinder`;
-
-    const modeInstructions: Record<string, string> = {
-      default: "a logical, surprising, and intellectually satisfying path of related concepts",
-      technical: "a technological path highlighting engineering systems, computing, physical sciences, mathematical structures, or protocols",
-      historical: "a historical path highlighting chronological events, societal shifts, geopolitical movements, or major historical turning points",
-      business: "a business path highlighting economics, corporate history, commercial incentives, market dynamics, or industrial changes",
-      philosophical: "a philosophical path highlighting intellectual frameworks, conceptual schemas, philosophical doctrines, or logical deductions",
-      contrarian: "a contrarian path highlighting systemic paradoxes, criticisms, counter-intuitive connections, or hidden ironies",
-    };
-    const modeGuideline = modeInstructions[mode] || modeInstructions.default;
-
-
     const config = getAiConfig();
-    const pathfinderSystemPrompt = `You are Interstice, an advanced knowledge pathfinder.
-Your task is to suggest a logical, surprising, and intellectually satisfying path of real concepts (corresponding to exact Wikipedia article titles) that connects Concept A to Concept B under the ${mode.toUpperCase()} lens.
+    let aiResult: AiConnectResponse | null = null;
 
-Concept A: "${titleA}"
-Concept B: "${titleB}"
+    const pathfinderSystemPrompt = `You are Interstice, the ultimate knowledge pathfinder and intellectual connection engine.
+Your mission is to find a real, logically sound, and intellectually thrilling bridge connecting Concept A to Concept B.
 
-MODE LENS GUIDELINE (${mode.toUpperCase()}):
-Find a path that represents: ${modeGuideline}.
+CORE PRINCIPLE:
+"Everything somehow connects." No matter how disparate, distant, or absurd two concepts seem, there exists a chain of real-world, factual, historical, scientific, or cultural stepping stones between them.
 
-CRITICAL RULES FOR PATH QUALITY:
-1. Every step MUST link to the next step through a direct, concrete, factual relationship (e.g., entity X created Y, event X occurred in country Y, X is a member of Y, X influenced Y, X was banned by Y).
-2. NEVER use abstract contrast, superficial comparison, or weak thematic similarities to bridge steps (e.g., do NOT link a digital meme directly to a political party by saying 'this contrasts with the other' or 'both are popular'). If there is no immediate real-world link, you MUST find intermediate steps (like a video app, a country, or a historical era) that factually bridge them.
-3. Every transition from Step N to Step N+1 must be direct and explainable with a concrete fact.
-4. Output an array of exact Wikipedia article titles starting with "${titleA}" and ending with "${titleB}".
-5. PATH LENGTH: The path can be as long as necessary (typically between 3 to 8 steps) to ensure every single transition is a direct, concrete, factual link. Do NOT compress the path or skip intermediate links if it requires more steps to be logical.
-6. Every step in the path MUST represent a real, widely known concept with an exact matching page on Wikipedia. Do not hallucinate or make up page titles.
+RULES FOR PATH GENERATION:
+1. DISTANCE ASSESSMENT & PATH LENGTH:
+   - For NORMAL / CLOSELY RELATED concepts (e.g., "Neuroplasticity" -> "Epigenetics", "Electricity" -> "Computer", "DNA" -> "Genetics"):
+     Create a clean, seamless, direct path of 3 to 5 total concepts (2 to 4 connections).
+   - For DISTANT, ABSURD, UNRELATED, OR FAR CONCEPTS (e.g., "Banana" -> "Black hole", "Toilet paper" -> "Artificial intelligence", "Socks" -> "Superconductivity", "Taylor Swift" -> "Quantum entanglement", "Pizza" -> "Space station", "Rubber duck" -> "French Revolution"):
+     You MUST TRY HARD! Do NOT create a lazy short jump or a 2-3 node jump.
+     You MUST generate AT LEAST 5 TO 6 CONNECTIONS (meaning AT LEAST 6 TO 8 TOTAL CONCEPTS in the path).
+     Example structure: [Concept A, Step 1, Step 2, Step 3, Step 4, Step 5, Concept B] = 7 nodes, 6 connections.
 
-EXAMPLES OF PATH QUALITY:
-- Input: "Tung Tung Tung Sahur" to "Narendra Modi"
-  * BAD PATH: ["Tung Tung Tung Sahur", "1951-52 Indian general election", "Narendra Modi"] (Illogical - there is no direct factual link between a TikTok meme from 2025 and an election in 1951. Jumping these steps is invalid).
-  * GOOD PATH: ["Tung Tung Tung Sahur", "TikTok", "Banning of TikTok in India", "Narendra Modi"] (Logical - Tung Tung Tung Sahur is a TikTok meme; TikTok was banned in India; the ban was enacted under Narendra Modi's administration).
+2. FACTUAL & CONCRETE TRANSITIONS:
+   - Every transition (from Step N to Step N+1) MUST be based on a concrete, real-world factual link (e.g., material composition, physical law, historical event, technological evolution, causal chain, biological relationship, documented influence).
+   - NEVER use abstract contrast or superficial comparison (e.g., do NOT say "both are popular" or "one contrasts with the other").
+   - Each concept must be a real, recognizable concept (standard Wikipedia article title, 1 to 4 words).
 
-- Input: "Kubernetes" to "Ancient Rome"
-  * BAD PATH: ["Kubernetes", "Colosseum", "Ancient Rome"] (Illogical - Kubernetes is software and Colosseum is an ancient monument; they don't link directly).
-  * GOOD PATH: ["Kubernetes", "Greek language", "Latin", "Ancient Rome"] (Logical - Kubernetes is derived from a Greek word; Greek has deep linguistic ties to Latin; Latin was the language of Ancient Rome).
+3. OUTPUT FORMAT:
+Return a JSON object with:
+- "distance": "normal" | "far" | "absurd"
+- "path": Array of objects for each step in the path:
+  [
+    {
+      "name": "Standard Wikipedia Article Title",
+      "reason": "Direct, concrete factual explanation of how this connects to the previous concept (for first concept: 'Origin concept')"
+    }
+  ]
+- "overallExplanation": "A compelling 2-3 sentence editorial narrative describing the surprising intellectual bridge discovered between the concepts."`;
 
-You must return a valid JSON object with the following field:
-- "path": An array of strings representing the exact Wikipedia article titles, e.g. ["${titleA}", "Unix", "UTF-8", "${titleB}"].`;
+    const pathfinderUserPrompt = `Find a connection bridge between Concept A: "${titleA}" and Concept B: "${titleB}". Remember: if they are distant or absurd, generate AT LEAST 5-6 connections (6-8 total concepts).`;
 
     try {
-      const pathfinderUserPrompt = `Find a ${mode}-themed path of real Wikipedia article titles connecting "${titleA}" to "${titleB}".`;
-      const aiPath = await callAi(config, pathfinderSystemPrompt, pathfinderUserPrompt);
-      if (aiPath && Array.isArray(aiPath.path) && aiPath.path.length >= 2) {
-        pathNames = aiPath.path;
+      const response = await callAi(config, pathfinderSystemPrompt, pathfinderUserPrompt);
+      if (response && Array.isArray(response.path) && response.path.length >= 2) {
+        aiResult = response;
       }
     } catch (err) {
-      console.error('AI pathfinder failed, falling back to BFS', err);
+      console.error('AI pathfinder call failed:', err);
     }
 
+    if (aiResult && aiResult.path && aiResult.distance !== 'normal' && aiResult.path.length < 6) {
+      try {
+        const expandPrompt = `The connection between "${titleA}" and "${titleB}" is distant/absurd, but the path currently only has ${aiResult.path.length} concepts.
+You MUST expand this path so that it has AT LEAST 6 to 8 concepts (at least 5-6 connections) connecting "${titleA}" to "${titleB}".
+Every single intermediate concept must be a real, standard Wikipedia article title with a concrete factual reason connecting it to the previous step.
 
-    if (pathNames.length < 2) {
+Return ONLY a valid JSON object with:
+- "distance": "absurd"
+- "path": Array of 6 to 8 concept objects with "name" and "reason"
+- "overallExplanation": 2-3 sentence editorial narrative.`;
+
+        const expandedResponse = await callAi(config, pathfinderSystemPrompt, expandPrompt);
+        if (expandedResponse && Array.isArray(expandedResponse.path) && expandedResponse.path.length >= 6) {
+          aiResult = expandedResponse;
+        }
+      } catch (expandErr) {
+        console.warn('Path expansion attempt failed, retaining original path:', expandErr);
+      }
+    }
+
+    // path steps
+    let rawSteps: AiPathStep[] = [];
+    let overallExplanation = '';
+    let traversalSource = 'Unified Knowledge Pathfinder';
+
+    if (aiResult && Array.isArray(aiResult.path) && aiResult.path.length >= 2) {
+      rawSteps = aiResult.path.map((step, idx) => ({
+        name: typeof step === 'string' ? step : step.name || `Step ${idx + 1}`,
+        reason: typeof step === 'string'
+          ? (idx === 0 ? 'Origin concept' : 'Connected concept in the path.')
+          : (step.reason || (idx === 0 ? 'Origin concept' : 'Connected concept in the path.')),
+      }));
+      overallExplanation = aiResult.overallExplanation || `A logical bridge discovered between ${titleA} and ${titleB}.`;
+    } else {
       traversalSource = 'Wikipedia Graph Traversal';
       if (titleA.toLowerCase() === titleB.toLowerCase()) {
-        pathNames = [titleA];
+        rawSteps = [{ name: titleA, reason: 'Origin concept' }];
       } else {
         const [detailsA, backlinksB] = await Promise.all([
           getWikipediaDetails(titleA),
@@ -109,18 +147,25 @@ You must return a valid JSON object with the following field:
         const filteredBBacklinks = filterLowValueLinks(backlinksB);
 
         const directLink = filteredALinks.find(l => l.toLowerCase() === titleB.toLowerCase());
-        
+
         if (directLink) {
-          pathNames = [titleA, titleB];
+          rawSteps = [
+            { name: titleA, reason: 'Origin concept' },
+            { name: titleB, reason: `Direct reference found in ${titleA}.` }
+          ];
         } else {
-          const overlap = filteredALinks.filter(l => 
+          const overlap = filteredALinks.filter(l =>
             filteredBBacklinks.some(bl => bl.toLowerCase() === l.toLowerCase())
           );
 
           if (overlap.length > 0) {
-            pathNames = [titleA, overlap[0], titleB];
+            rawSteps = [
+              { name: titleA, reason: 'Origin concept' },
+              { name: overlap[0], reason: `Connected from ${titleA}.` },
+              { name: titleB, reason: `Connects to ${titleB}.` }
+            ];
           } else {
-            const topALinks = filteredALinks.slice(0, 8);
+            const topALinks = filteredALinks.slice(0, 10);
             const aLinksDetails = await Promise.all(
               topALinks.map(async (l) => {
                 const details = await getWikipediaDetails(l);
@@ -130,106 +175,75 @@ You must return a valid JSON object with the following field:
 
             let foundPath = false;
             for (const ad of aLinksDetails) {
-              const overlap2 = ad.links.find(l => 
+              const overlap2 = ad.links.find(l =>
                 filteredBBacklinks.some(bl => bl.toLowerCase() === l.toLowerCase())
               );
               if (overlap2) {
-                pathNames = [titleA, ad.parent, overlap2, titleB];
+                rawSteps = [
+                  { name: titleA, reason: 'Origin concept' },
+                  { name: ad.parent, reason: `Key domain linked from ${titleA}.` },
+                  { name: overlap2, reason: `Bridging concept.` },
+                  { name: titleB, reason: `Connects directly to ${titleB}.` }
+                ];
                 foundPath = true;
                 break;
               }
             }
 
             if (!foundPath) {
-              pathNames = [titleA, titleB];
+              rawSteps = [
+                { name: titleA, reason: 'Origin concept' },
+                { name: titleB, reason: `Direct conceptual bridge between ${titleA} and ${titleB}.` }
+              ];
             }
           }
         }
       }
+      overallExplanation = `A conceptual traversal between ${titleA} and ${titleB}.`;
+    }
+
+    // clan up consecutive duplicate step names if any
+    const deduplicatedSteps: AiPathStep[] = [];
+    for (let i = 0; i < rawSteps.length; i++) {
+      if (i === 0 || rawSteps[i].name.toLowerCase() !== rawSteps[i - 1].name.toLowerCase()) {
+        deduplicatedSteps.push(rawSteps[i]);
+      }
     }
 
 
-    const resolvedPathDetailsRaw = await Promise.all(
-      pathNames.map(async (name) => {
-        const canonical = await searchWikipedia(name);
-        const summary = await getWikipediaSummary(canonical || name);
-        const details = await getWikipediaDetails(canonical || name);
+    if (deduplicatedSteps.length > 0) {
+      deduplicatedSteps[0].name = deduplicatedSteps[0].name || titleA;
+      deduplicatedSteps[deduplicatedSteps.length - 1].name = deduplicatedSteps[deduplicatedSteps.length - 1].name || titleB;
+    }
+
+    const resolvedPathDetails = await Promise.all(
+      deduplicatedSteps.map(async (step, idx) => {
+        const canonical = await searchWikipedia(step.name);
+        const effectiveName = canonical || step.name;
+        const [summary, details] = await Promise.all([
+          getWikipediaSummary(effectiveName),
+          getWikipediaDetails(effectiveName)
+        ]);
+
         return {
-          name: canonical || name,
-          explanation: summary.extract || 'No overview available.',
-          image: summary.image,
-          url: summary.url,
-          categories: details.categories,
-          sources: details.externalLinks.slice(0, 10),
+          name: step.name, // kep the clean conceptual name from the path
+          canonicalTitle: effectiveName,
+          explanation: summary.extract || `Exploration of ${step.name}.`,
+          reason: step.reason || (idx === 0 ? 'Origin concept' : 'Connected concept in the path.'),
+          image: summary.image || '',
+          url: summary.url || `https://en.wikipedia.org/wiki/${encodeURIComponent(effectiveName.replace(/\s+/g, '_'))}`,
+          categories: details.categories || [],
+          sources: (details.externalLinks || []).slice(0, 8),
+          relationshipType: idx === 0 ? 'Start Node' : 'Path Connection',
+          supportingSource: idx === 0 ? 'Start Node' : traversalSource,
         };
       })
     );
 
-
-    const resolvedPathDetails = resolvedPathDetailsRaw.filter((step, idx, self) => 
-      self.findIndex(s => s.name.toLowerCase() === step.name.toLowerCase()) === idx
-    );
-
-
-    const pathSummariesText = resolvedPathDetails.map((step, idx) => {
-      return `Step ${idx + 1}: "${step.name}"
-Summary: ${step.explanation}`;
-    }).join('\n\n');
-
-
-    const systemPrompt = `You are Interstice, an advanced knowledge pathfinder.
-Your task is to take a path of connected concepts and explain why each transition makes sense under the "${mode.toUpperCase()}" lens.
-For each transition from Step N to Step N+1, write a compelling, highly informative 1-to-2 sentence connection explanation ("reason") explaining the direct, concrete factual link between the two.
-
-CRITICAL RULES FOR REASONS:
-1. Explain the concrete, real-world connection between the concepts (e.g., "Concept A is a video on TikTok, which was banned in India by Narendra Modi's administration").
-2. NEVER use contrast, comparison, or abstract similarities as the reason (e.g., do NOT say "Concept A contrasts with Concept B because one is serious and the other is a meme"). If you write a contrast or comparison instead of a real factual connection, you have FAILED.
-3. Keep the reason concise, engaging, and under 2 sentences.
-
-Path steps: ${resolvedPathDetails.map(d => d.name).join(' → ')}
-
-SUMMARIES:
-${pathSummariesText}
-
-You must return a valid JSON object with the following fields:
-1. "path": An array of objects. Each object must contain:
-   - "name": The exact name of the concept (must match the step name).
-   - "reason": A brief, compelling explanation of why this concept links to the PREVIOUS concept in the path. For the first concept, the reason should be "Origin concept".
-2. "overallExplanation": A concise summary (2-3 sentences) explaining the narrative logic of this connection path under the "${mode}" lens.`;
-
-    const userPrompt = `Explain the transitions for the path: ${resolvedPathDetails.map(d => d.name).join(' -> ')}`;
-
-    let aiResponse;
-    try {
-      aiResponse = await callAi(config, systemPrompt, userPrompt);
-    } catch (err) {
-      console.error('AI connection explanation failed, using fallback', err);
-      aiResponse = {
-        path: resolvedPathDetails.map((step, idx) => ({
-          name: step.name,
-          reason: idx === 0 ? 'Origin concept' : `Connected concept in the path.`,
-        })),
-        overallExplanation: `A connection path between ${titleA} and ${titleB} traversing related intermediate concepts under the ${mode} lens.`,
-      };
-    }
-
-
-    const finalPath = resolvedPathDetails.map((step, idx) => {
-      const aiStep = (aiResponse.path || []).find((p: any) => p && p.name && p.name.toLowerCase() === step.name.toLowerCase()) 
-        || (aiResponse.path && aiResponse.path[idx])
-        || { reason: idx === 0 ? 'Origin concept' : 'Connected concept' };
-
-      return {
-        ...step,
-        reason: aiStep.reason || (idx === 0 ? 'Origin concept' : 'Connected concept'),
-        relationshipType: idx === 0 ? 'Start Node' : 'Path Connection',
-        supportingSource: idx === 0 ? 'Start Node' : traversalSource,
-      };
-    });
-
     return NextResponse.json({
-      path: finalPath,
-      overallExplanation: aiResponse.overallExplanation || 'Logical bridge successfully generated.'
+      path: resolvedPathDetails,
+      overallExplanation: overallExplanation || `Logical bridge successfully generated between ${titleA} and ${titleB}.`,
+      connectionCount: Math.max(0, resolvedPathDetails.length - 1),
     });
 
   } catch (e) {

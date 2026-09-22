@@ -249,30 +249,36 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           <div className="p-4 border-b border-[var(--border)] flex flex-col gap-1">
             <span className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] mb-2 font-mono font-medium">
-              Exploration Mode
+              Mode
             </span>
-            <div className="grid grid-cols-2 gap-1.5">
-              {MODES.map((m) => {
-                const isActive = explorationMode === m.id;
-                return (
-                  <button
-                    key={m.id}
-                    onClick={() => {
-                      setExplorationMode(m.id);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={[
-                      'text-left text-xs py-2 px-3 rounded transition-colors cursor-pointer font-mono',
-                      isActive
-                        ? 'text-[var(--text)] bg-[var(--bg-panel)] font-semibold border border-[var(--border)]'
-                        : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--bg-panel)]',
-                    ].join(' ')}
-                  >
-                    {m.label}
-                  </button>
-                );
-              })}
-            </div>
+            {activePage === 'connection-finder' ? (
+              <div className="text-left text-xs py-2 px-3 rounded text-[var(--text)] bg-[var(--bg-panel)] font-semibold border border-[var(--border)] font-mono">
+                Default
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-1.5">
+                {MODES.map((m) => {
+                  const isActive = explorationMode === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => {
+                        setExplorationMode(m.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={[
+                        'text-left text-xs py-2 px-3 rounded transition-colors cursor-pointer font-mono',
+                        isActive
+                          ? 'text-[var(--text)] bg-[var(--bg-panel)] font-semibold border border-[var(--border)]'
+                          : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--bg-panel)]',
+                      ].join(' ')}
+                    >
+                      {m.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {mounted && recentItems.length > 0 && (
@@ -329,23 +335,29 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <span className="text-[10px] tracking-[0.15em] uppercase text-[var(--muted)] mb-2 font-mono font-medium">
               Mode
             </span>
-            {MODES.map((m) => {
-              const isActive = explorationMode === m.id;
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => setExplorationMode(m.id)}
-                  className={[
-                    'text-left text-[11px] py-1 px-0 transition-colors duration-100 cursor-pointer font-mono',
-                    isActive
-                      ? 'text-[var(--text)] font-semibold border-l border-[var(--text)] pl-3 -ml-0'
-                      : 'text-[var(--muted)] hover:text-[var(--text)]',
-                  ].join(' ')}
-                >
-                  {m.label}
-                </button>
-              );
-            })}
+            {activePage === 'connection-finder' ? (
+              <div className="text-left text-[11px] py-1 px-0 text-[var(--text)] font-semibold border-l border-[var(--text)] pl-3 font-mono select-none">
+                Default
+              </div>
+            ) : (
+              MODES.map((m) => {
+                const isActive = explorationMode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setExplorationMode(m.id)}
+                    className={[
+                      'text-left text-[11px] py-1 px-0 transition-colors duration-100 cursor-pointer font-mono',
+                      isActive
+                        ? 'text-[var(--text)] font-semibold border-l border-[var(--text)] pl-3 -ml-0'
+                        : 'text-[var(--muted)] hover:text-[var(--text)]',
+                    ].join(' ')}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })
+            )}
           </div>
 
           {mounted && recentItems.length > 0 && (

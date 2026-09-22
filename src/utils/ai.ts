@@ -1,7 +1,7 @@
 export function getAiConfig(): { apiKey: string; baseUrl: string; model: string } {
   const apiKey = process.env.GROQ_API_KEY || '';
   const baseUrl = process.env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1';
-  const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+  const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 
   return { apiKey, baseUrl, model };
 }
@@ -28,68 +28,76 @@ export async function callAi(
   const fullSystemPrompt = `${systemPrompt}\n\nCRITICAL: Return ONLY valid JSON. Do not include markdown, code fences, or external text.`;
 
   let lastError: Error | null = null;
-  const maxAttempts = 3;
+  const modelsToTry = [config.model, 'openai/gpt-oss-20b', 'qwen/qwen3.8-27b'].filter(
+    (m, idx, arr) => m && arr.indexOf(m) === idx
+  );
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${config.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: config.model,
-          messages: [
-            { role: 'system', content: fullSystemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.7,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`AI API raw error (Status ${response.status}):`, errorText);
-
-        let errorMessage = `API Request failed with status ${response.status}`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          errorMessage = errorJson.error?.message || errorMessage;
-        } catch {
-          if (errorText) errorMessage = errorText.substring(0, 300);
-        }
-
-        // If we get rate-limited (429) or the server is overloaded (503), wait and retry.
-        if ((response.status === 503 || response.status === 429) && attempt < maxAttempts) {
-          await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
-          continue;
-        }
-
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      const content = result.choices?.[0]?.message?.content;
-      if (!content) {
-        throw new Error('No content returned from AI completion.');
-      }
-
-      const cleaned = extractJson(content);
+  for (const currentModel of modelsToTry) {
+    const maxAttempts = 2;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        return JSON.parse(cleaned);
-      } catch {
-        console.error('Failed to parse JSON from model response:', content);
-        throw new Error('AI returned an invalid JSON structure. Please try again.');
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${config.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: currentModel,
+            messages: [
+              { role: 'system', content: fullSystemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.6,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`AI API raw error for model ${currentModel} (Status ${response.status}):`, errorText);
+
+          let errorMessage = `API Request failed with status ${response.status}`;
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error?.message || errorMessage;
+          } catch {
+            if (errorText) errorMessage = errorText.substring(0, 300);
+          }
+
+          // If rate-limited (429) or overloaded (503), retry or try next model
+          if ((response.status === 503 || response.status === 429) && attempt < maxAttempts) {
+            await new Promise((resolve) => setTimeout(resolve, attempt * 1200));
+            continue;
+          }
+
+          // If model not found or permanent error, break attempt loop to try next model in list
+          lastError = new Error(errorMessage);
+          break;
+        }
+
+        const result = await response.json();
+        const content = result.choices?.[0]?.message?.content;
+        if (!content) {
+          throw new Error('No content returned from AI completion.');
+        }
+
+        const cleaned = extractJson(content);
+        try {
+          return JSON.parse(cleaned);
+        } catch {
+          console.error('Failed to parse JSON from model response:', content);
+          throw new Error('AI returned an invalid JSON structure. Please try again.');
+        }
+      } catch (err) {
+        lastError = err as Error;
+        if (attempt < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1200));
+        }
       }
-    } catch (err) {
-      lastError = err as Error;
-      if (attempt === maxAttempts) throw err;
-      await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
     }
   }
 
-  throw lastError || new Error('API Request failed after max attempts');
+  throw lastError || new Error('API Request failed after trying available models');
 }
 
 // Fallback to ask the LLM if Wikipedia has no summary or page for the concept.
@@ -99,16 +107,16 @@ export async function generateAiFallbackSummary(concept: string): Promise<string
     console.warn('API key is missing, cannot generate fallback summary.');
     return '';
   }
-  
+
   const systemPrompt = `You are Interstice, an expert educator.
 Provide a concise, direct, factual, and interesting 2-3 sentence overview or answer for the concept or question: "${concept}".
 Do not include any introductions. Return a JSON object with a single field:
 {
   "summary": "your 2-3 sentence overview or answer"
 }`;
-  
+
   const userPrompt = `Provide a concise 2-3 sentence overview or answer for: "${concept}".`;
-  
+
   try {
     const res = await callAi(config, systemPrompt, userPrompt);
     return res.summary || '';
