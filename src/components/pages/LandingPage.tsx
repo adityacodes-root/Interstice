@@ -72,36 +72,34 @@ export default function LandingPage() {
         />
       </div>
 
-      <div className="flex-1 flex flex-col justify-center px-12 md:px-20 max-w-4xl animate-fade-up relative z-10">
+      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 md:px-20 max-w-4xl animate-fade-up relative z-10 py-8 sm:py-0">
 
         <h1
-          className="font-serif text-[72px] md:text-[96px] lg:text-[112px] leading-[0.92] tracking-tight text-[var(--text)] mb-4"
+          className="font-serif text-4xl sm:text-6xl md:text-8xl lg:text-[108px] leading-[0.96] tracking-tight text-[var(--text)] mb-4"
           style={{ fontFamily: 'var(--font-dm-serif)' }}
         >
           Most Discoveries Begin
           With a Detour.
         </h1>
-        <p className="text-[var(--muted)] text-sm md:text-base mb-10 font-mono tracking-normal">
+        <p className="text-[var(--muted)] text-xs sm:text-sm md:text-base mb-6 sm:mb-10 font-mono tracking-normal">
           <span className="italic text-[var(--muted)]">Follow yours.</span>
         </p>
 
-        {/* Thin rule */}
+        <div className="w-full border-t border-[var(--border)] mb-6 sm:mb-8" />
 
-        <div className="w-full border-t border-[var(--border)] mb-8" />
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <div className="flex items-center gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <input
               type="text"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="Enter a concept to explore"
-              className="flex-1 bg-transparent text-[var(--text)] text-base placeholder-[var(--muted)] border-b border-[var(--border)] focus:border-[var(--text)] pb-2 focus:outline-none transition-colors duration-200 font-mono"
+              className="flex-1 bg-transparent text-[var(--text)] text-sm sm:text-base placeholder-[var(--muted)] border-b border-[var(--border)] focus:border-[var(--text)] pb-2 focus:outline-none transition-colors duration-200 font-mono"
             />
             <button
               type="submit"
               disabled={isLoading || !topic.trim()}
-              className="text-[11px] tracking-[0.12em] uppercase text-[var(--text)] border border-[var(--border)] px-5 py-2 hover:border-[var(--text)] hover:bg-[var(--bg-panel)] transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer font-mono"
+              className="text-[11px] tracking-[0.12em] uppercase text-[var(--text)] border border-[var(--border)] px-5 py-2.5 sm:py-2 hover:border-[var(--text)] hover:bg-[var(--bg-panel)] transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer font-mono whitespace-nowrap text-center"
             >
               {isLoading ? 'Thinking…' : 'Explore →'}
             </button>
@@ -112,7 +110,7 @@ export default function LandingPage() {
           )}
         </form>
 
-        <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 animate-fade-in">
+        <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-x-2.5 sm:gap-x-3 gap-y-2 animate-fade-in">
           <span className="text-[11px] tracking-[0.12em] uppercase text-[var(--muted)] font-mono">
             Try —
           </span>
@@ -120,7 +118,7 @@ export default function LandingPage() {
             <React.Fragment key={s}>
               <button
                 onClick={() => setTopic(s)}
-                className="text-[11px] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-mono"
+                className="text-[11px] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer font-mono py-0.5"
               >
                 {s}
               </button>

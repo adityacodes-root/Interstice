@@ -185,31 +185,34 @@ function DetailPanel() {
   const hasConnection = activeDetails.reason && activeDetails.reason !== 'Initial starting topic.';
 
   return (
-    <aside
-      className="w-[320px] flex-shrink-0 border-l border-[var(--border)] flex flex-col overflow-hidden bg-[var(--bg-sidebar)] z-10"
-      style={{ animation: 'slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
-    >
+    <>
+      <div
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-20 md:hidden animate-fade-in"
+        onClick={() => setSelectedNodeId(null)}
+      />
+      <aside
+        className="fixed inset-x-0 bottom-0 max-h-[78vh] sm:max-h-[82vh] w-full border-t md:border-t-0 md:border-l border-[var(--border)] flex flex-col overflow-hidden bg-[var(--bg-sidebar)] z-30 shadow-2xl rounded-t-2xl md:rounded-none md:relative md:inset-auto md:w-[320px] md:max-h-none md:z-10 md:shadow-none animate-sheet-up md:animate-none"
+      >
+        <div className="w-10 h-1 rounded-full bg-[var(--border)] mx-auto mt-2.5 mb-1 md:hidden shrink-0" />
 
-      {activeDetails.image && (
-        <div className="w-full h-[150px] relative overflow-hidden bg-[var(--bg-panel)] border-b border-[var(--border)] shrink-0">
-          <img
-            src={activeDetails.image}
-            alt={activeDetails.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        </div>
-      )}
+        {activeDetails.image && (
+          <div className="w-full h-[120px] sm:h-[150px] relative overflow-hidden bg-[var(--bg-panel)] border-b border-[var(--border)] shrink-0">
+            <img
+              src={activeDetails.image}
+              alt={activeDetails.name}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        )}
 
-
-      <div className="px-6 pt-6 pb-4 border-b border-[var(--border)] flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-1.5 min-w-0">
-
-          {activeDetails.neighborhoodLabel && (
-            <span className="text-[8px] tracking-[0.25em] uppercase font-mono text-[var(--muted)] block opacity-75">
-              {activeDetails.neighborhoodLabel}
-            </span>
-          )}
+        <div className="px-5 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-[var(--border)] flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-1.5 min-w-0">
+            {activeDetails.neighborhoodLabel && (
+              <span className="text-[8px] tracking-[0.25em] uppercase font-mono text-[var(--muted)] block opacity-75">
+                {activeDetails.neighborhoodLabel}
+              </span>
+            )}
           <h2
             className="text-lg font-medium text-[var(--text)] leading-snug font-serif truncate"
             style={{ fontFamily: 'var(--font-dm-serif)' }}
@@ -472,6 +475,7 @@ function DetailPanel() {
         )}
       </div>
     </aside>
+  </>
   );
 }
 
@@ -638,14 +642,11 @@ function JourneySummaryModal({ isOpen, onClose, journey }: JourneyModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
+      <div className="relative bg-[var(--bg-card)] border border-[var(--border)] w-full max-w-xl max-h-[85vh] overflow-y-auto p-5 sm:p-8 z-10 flex flex-col gap-5 sm:gap-6 rounded-lg sm:rounded-none">
 
-
-      <div className="relative bg-[var(--bg-card)] border border-[var(--border)] w-full max-w-xl p-8 z-10 flex flex-col gap-6">
-
-  
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
           <span className="text-[10px] tracking-[0.2em] uppercase text-[var(--muted)] font-semibold">
             Your Exploration Journey
@@ -730,28 +731,26 @@ function GraphToolbar() {
   return (
     <>
       <div className="flex-shrink-0 border-b border-[var(--border)] bg-[var(--bg-sidebar)]">
-
-        <div className="h-9 flex items-center px-4 gap-4">
-
-          <div className="flex items-center gap-1.5 text-[11px] text-[#A1A1AA] overflow-x-auto whitespace-nowrap flex-1 min-w-0">
+        <div className="min-h-9 py-1 sm:py-0 flex items-center px-3 sm:px-4 gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 text-[11px] text-[var(--muted)] overflow-x-auto whitespace-nowrap flex-1 min-w-0 scrollbar-none pr-1">
             <button
               onClick={() => setActivePage('landing')}
-              className="hover:text-white transition-colors cursor-pointer shrink-0"
+              className="hover:text-[var(--text)] transition-colors cursor-pointer shrink-0"
             >
               ←
             </button>
-            <span className="text-[#3F3F46] mx-1 shrink-0">/</span>
+            <span className="text-[var(--border)] mx-0.5 sm:mx-1 shrink-0">/</span>
             {breadcrumbs.map((crumb, i) => {
               const isLast = i === breadcrumbs.length - 1;
               return (
                 <React.Fragment key={i}>
-                  {i > 0 && <span className="text-[#3F3F46] shrink-0">/</span>}
+                  {i > 0 && <span className="text-[var(--border)] shrink-0">/</span>}
                   {isLast ? (
-                    <span className="text-white font-medium">{crumb}</span>
+                    <span className="text-[var(--text)] font-medium">{crumb}</span>
                   ) : (
                     <button
                       onClick={() => handleCrumbClick(crumb)}
-                      className="text-[#A1A1AA] hover:text-white hover:underline transition-colors cursor-pointer"
+                      className="text-[var(--muted)] hover:text-[var(--text)] hover:underline transition-colors cursor-pointer"
                     >
                       {crumb}
                     </button>
@@ -761,18 +760,16 @@ function GraphToolbar() {
             })}
           </div>
 
-
-          <div className="flex items-center gap-4 shrink-0">
-            <span className="text-[10px] text-[#3F3F46]">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            <span className="hidden md:inline-block text-[10px] text-[var(--muted)]">
               {nodes.filter(n => !n.data?.isNeighborhoodLabel && !n.hidden).length} nodes
               {hiddenNodeIds.size > 0 && (
-                <span className="text-[#52525B] ml-1">· {hiddenNodeIds.size} hidden</span>
+                <span className="text-[var(--muted)] ml-1">· {hiddenNodeIds.size} hidden</span>
               )}
             </span>
 
-
             <span
-              className="text-[9px] uppercase tracking-[0.15em] font-mono px-2 py-0.5 rounded-sm border"
+              className="text-[9px] uppercase tracking-[0.12em] sm:tracking-[0.15em] font-mono px-1.5 sm:px-2 py-0.5 rounded-sm border"
               style={{ color: modeColor, borderColor: `${modeColor}40`, background: `${modeColor}12` }}
             >
               {explorationMode}
@@ -781,17 +778,17 @@ function GraphToolbar() {
             {journey.length > 1 && (
               <button
                 onClick={() => setIsJourneyOpen(true)}
-                className="text-[11px] hover:text-white transition-colors cursor-pointer font-medium"
+                className="text-[11px] hover:text-[var(--text)] transition-colors cursor-pointer font-medium whitespace-nowrap"
                 style={{ color: modeColor }}
               >
-                Explain Journey
+                Journey
               </button>
             )}
 
             {hiddenNodeIds.size > 0 && (
               <button
                 onClick={() => expandAllNodes()}
-                className="text-[11px] text-[#A1A1AA] hover:text-white transition-colors cursor-pointer"
+                className="text-[11px] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer whitespace-nowrap"
               >
                 Show All
               </button>

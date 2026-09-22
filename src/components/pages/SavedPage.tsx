@@ -22,69 +22,65 @@ export default function SavedPage() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-3xl mx-auto px-8 py-10 flex flex-col gap-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-8 py-6 sm:py-10 flex flex-col gap-6 sm:gap-8">
 
-
-        <div className="flex items-end justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
             <h1
-              className="text-[40px] leading-tight tracking-tight text-white mb-2"
+              className="text-3xl sm:text-[40px] leading-tight tracking-tight text-[var(--text)] mb-1 sm:mb-2"
               style={{ fontFamily: 'var(--font-dm-serif)' }}
             >
               Saved Journeys
             </h1>
-            <p className="text-[13px] text-[#A1A1AA]">
+            <p className="text-xs sm:text-[13px] text-[var(--muted)]">
               Revisit and restore previous explorations.
             </p>
           </div>
           {history.length > 0 && (
             <button
               onClick={() => setShowConfirmClear(true)}
-              className="text-[11px] tracking-[0.12em] uppercase text-[#EF4444] hover:text-red-400 transition-colors cursor-pointer pb-1.5"
+              className="text-[11px] tracking-[0.12em] uppercase text-[#EF4444] hover:text-red-400 transition-colors cursor-pointer pb-1.5 self-start sm:self-auto"
             >
               Clear All
             </button>
           )}
         </div>
 
-        <div className="border-t border-[#27272A]" />
+        <div className="border-t border-[var(--border)]" />
 
-
-        <div className="flex items-center gap-10">
+        <div className="grid grid-cols-3 gap-4 sm:flex sm:items-center sm:gap-10">
           {[
             { label: 'Total', value: totalSessions },
             { label: 'Starred', value: favCount },
             { label: 'Max depth', value: maxDepth },
           ].map((s) => (
             <div key={s.label} className="flex flex-col gap-0.5">
-              <span className="text-[24px] font-light text-white tabular-nums">{s.value}</span>
-              <span className="text-[10px] tracking-[0.15em] uppercase text-[#A1A1AA]">{s.label}</span>
+              <span className="text-xl sm:text-[24px] font-light text-[var(--text)] tabular-nums">{s.value}</span>
+              <span className="text-[9px] sm:text-[10px] tracking-[0.15em] uppercase text-[var(--muted)]">{s.label}</span>
             </div>
           ))}
         </div>
 
-        <div className="border-t border-[#27272A]" />
+        <div className="border-t border-[var(--border)]" />
 
-
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           <input
             type="text"
             value={filterQuery}
             onChange={(e) => setFilterQuery(e.target.value)}
             placeholder="Filter explorations…"
-            className="flex-1 bg-transparent text-[13px] text-white placeholder-[#3F3F46] border-b border-[#27272A] focus:border-white pb-1.5 focus:outline-none transition-colors"
+            className="flex-1 bg-transparent text-[13px] text-[var(--text)] placeholder-[var(--muted)] border-b border-[var(--border)] focus:border-[var(--text)] pb-1.5 focus:outline-none transition-colors"
           />
           <button
             onClick={() => setOnlyFavorites(!onlyFavorites)}
             className={[
-              'text-[11px] tracking-[0.1em] uppercase transition-colors cursor-pointer',
-              onlyFavorites ? 'text-white' : 'text-[#A1A1AA] hover:text-white',
+              'text-[11px] tracking-[0.1em] uppercase transition-colors cursor-pointer self-start sm:self-auto py-1',
+              onlyFavorites ? 'text-[var(--text)] font-semibold' : 'text-[var(--muted)] hover:text-[var(--text)]',
             ].join(' ')}
           >
             {onlyFavorites ? '★ Starred' : '☆ Starred'}
           </button>
         </div>
-
 
         {filtered.length > 0 ? (
           <div className="flex flex-col">
@@ -92,29 +88,29 @@ export default function SavedPage() {
               <div
                 key={item.id}
                 className={[
-                  'flex items-center justify-between py-4 gap-4',
-                  i < filtered.length - 1 ? 'border-b border-[#1C1C1C]' : '',
+                  'flex items-center justify-between py-3.5 sm:py-4 gap-3 sm:gap-4',
+                  i < filtered.length - 1 ? 'border-b border-[var(--border)]' : '',
                 ].join(' ')}
               >
                 <div className="flex flex-col gap-1 min-w-0">
-                  <span className="text-[13px] text-white truncate font-medium">
+                  <span className="text-xs sm:text-[13px] text-[var(--text)] truncate font-medium">
                     {item.title}
                   </span>
-                  <div className="flex items-center gap-3 text-[11px] text-[#A1A1AA]">
+                  <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] text-[var(--muted)]">
                     <span>{item.date}</span>
-                    <span className="text-[#3F3F46]">·</span>
+                    <span className="text-[var(--border)]">·</span>
                     <span>{item.nodeCount} concepts</span>
-                    <span className="text-[#3F3F46]">·</span>
+                    <span className="text-[var(--border)]">·</span>
                     <span className="capitalize">{item.mode}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
                   <button
                     onClick={() => toggleFavorite(item.id)}
                     className={[
-                      'text-[14px] cursor-pointer transition-colors',
-                      item.favorite ? 'text-white' : 'text-[#3F3F46] hover:text-white',
+                      'text-[14px] cursor-pointer transition-colors p-1',
+                      item.favorite ? 'text-[var(--text)]' : 'text-[var(--muted)] hover:text-[var(--text)]',
                     ].join(' ')}
                     title="Toggle star"
                   >
@@ -122,13 +118,13 @@ export default function SavedPage() {
                   </button>
                   <button
                     onClick={() => loadExploration(item)}
-                    className="text-[11px] tracking-[0.1em] uppercase text-[#A1A1AA] hover:text-white transition-colors cursor-pointer"
+                    className="text-[11px] tracking-[0.1em] uppercase text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer px-1.5 py-0.5"
                   >
                     Open
                   </button>
                   <button
                     onClick={() => deleteHistoryItem(item.id)}
-                    className="text-[11px] text-[#3F3F46] hover:text-white transition-colors cursor-pointer"
+                    className="text-[14px] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer p-1 leading-none"
                     title="Delete"
                   >
                     ×
@@ -139,7 +135,7 @@ export default function SavedPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-2 py-8">
-            <p className="text-[13px] text-[#A1A1AA]">
+            <p className="text-[13px] text-[var(--muted)]">
               {onlyFavorites
                 ? 'No starred explorations yet.'
                 : 'No explorations saved yet. Start one from New Exploration.'}
